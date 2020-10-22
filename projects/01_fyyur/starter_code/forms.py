@@ -4,6 +4,9 @@ from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
 from wtforms.validators import DataRequired, AnyOf, URL
 
 class ShowForm(Form):
+    name = StringField(
+        'name   '
+    )
     artist_id = StringField(
         'artist_id'
     )
