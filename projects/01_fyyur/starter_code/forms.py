@@ -13,6 +13,9 @@ class ShowForm(Form):
     venue_id = StringField(
         'venue_id'
     )
+    image_link = StringField(
+        'image_link'
+    )
     start_time = DateTimeField(
         'start_time',
         validators=[DataRequired()],

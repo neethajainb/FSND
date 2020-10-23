@@ -79,7 +79,7 @@ def format_datetime(value, format='medium'):
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
       format="EE MM, dd, y h:mma"
-  return babel.dates.format_datetime(date, format)
+  return babel.dates.format_datetime(date, format, locale='en')
 
 app.jinja_env.filters['datetime'] = format_datetime
 
@@ -121,6 +121,7 @@ def venues():
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
+# search_result = d.session.query(Value).fli
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
@@ -518,18 +519,26 @@ def shows():
     "start_time": "2035-04-15T20:00:00.000Z"
   }]
 
-  shows_query = db.session.query(Show).join(Artist).join(Venue).all()
-
   data = []
-  for show in shows_query:
-    data.append({
-      "venue_id": show.venue_id,
-      "venue_name": show.venue_name,
-      "artist_id": show.artist_id,
-      "artist_name": show.artist_name,
-      "artist_image_link": show.artist_image_link,
-      "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
-    })
+  all_shows = Show.query.all()
+  for show in all_shows:
+    print(show.id)
+    shows_query = db.session.query(Show, Artist, Venue).filter(Show.id == show.id).join(Artist,Artist.id == Show.artist_id).join(Venue, Venue.id == Show.venue_id)
+    result_set = shows_query.all()
+    print(result_set)
+    for result in result_set:
+      data.append({
+       "venue_id": result.Venue.id,
+       "venue_name": result.Venue.name,
+       "artist_id": result.Artist.id,
+       "artist_name": result.Artist.name,
+       "artist_image_link": result.Artist.image_link,
+       "start_time": result.Show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+      })
+      print(result.Show.id)
+      print(result.Artist.id)
+      print(result.Venue.name)
+
 
   return render_template('pages/shows.html', shows=data)
 

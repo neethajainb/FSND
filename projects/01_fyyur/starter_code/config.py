@@ -11,4 +11,4 @@ DEBUG = True
 
 # TODO IMPLEMENT DATABASE URL
 SQLALCHEMY_DATABASE_URI = 'postgres://neethajain@localhost:5432/fyyur'
-SQLALCHEMY_ECHO = True
+#SQLALCHEMY_ECHO = True
