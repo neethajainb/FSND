@@ -518,14 +518,18 @@ def shows():
     "start_time": "2035-04-15T20:00:00.000Z"
   }]
 
-  all_shows = db.session.query(Show).join(Artist).join(Venue).all()
-  #print(all_shows)
-  for show in all_shows:
-   print(show.name)
-   print(show.artist_id)
-   print(show.artist.name)
+  shows_query = db.session.query(Show).join(Artist).join(Venue).all()
 
   data = []
+  for show in shows_query:
+    data.append({
+      "venue_id": show.venue_id,
+      "venue_name": show.venue_name,
+      "artist_id": show.artist_id,
+      "artist_name": show.artist_name,
+      "artist_image_link": show.artist_image_link,
+      "start_time": show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+    })
 
   return render_template('pages/shows.html', shows=data)
 
