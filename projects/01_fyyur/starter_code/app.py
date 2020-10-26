@@ -239,7 +239,7 @@ def create_venue_submission():
     db.session.close()
   return render_template('pages/home.html')
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<venue_id>/delete', methods=['GET'])
 def delete_venue(venue_id):
    error = False
    try:
@@ -249,18 +249,13 @@ def delete_venue(venue_id):
    except:
      error = True
      db.session.rollback()
-     print(sys.exc_info())
    finally:
      db.session.close()
    if error:
      flash(f'An error occurred. Venue {venue_id} could not be deleted.')
    if not error:
      flash(f'Venue {venue_id} was successfully deleted.')
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
 
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
    return render_template('pages/home.html')
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
@@ -320,6 +315,7 @@ def edit_venue_submission(venue_id):
   # venue record with ID <venue_id> using the new attributes
   return redirect(url_for('show_venue', user_provided_venue_id = venue_id))
 
+#  ----------------------------------------------------------------
 #  Artists
 #  ----------------------------------------------------------------
 @app.route('/artists')
@@ -503,6 +499,26 @@ def create_artist_submission():
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
 
+#TODO Use DELETE HTTP method instead of GET and remove /delete from URL
+# REST semantics
+@app.route('/artists/<artist_id>/delete', methods=['GET'])
+def delete_artist(artist_id):
+   error = False
+   try:
+    artist = Artist.query.get(artist_id)
+    db.session.delete(artist)
+    db.session.commit()
+   except:
+     error = True
+     db.session.rollback()
+   finally:
+     db.session.close()
+   if error:
+     flash(f'An error occurred. Artist {artist_id} could not be deleted.')
+   if not error:
+     flash(f'Artist {artist.name} was successfully deleted.')
+
+   return render_template('pages/home.html')
 
 
 #  Shows
