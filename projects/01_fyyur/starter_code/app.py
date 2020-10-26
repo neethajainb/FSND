@@ -27,9 +27,6 @@ db = SQLAlchemy(app)
 # Models.
 #----------------------------------------------------------------------------#
 
-#TODO add website
-#"website": "https://www.themusicalhop.com",
-#TODO ADD GENRES
 class Venue(db.Model):
     __tablename__ = 'venue'
     id = db.Column(db.Integer, primary_key=True)
@@ -56,7 +53,8 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-
+    seeking_description = db.Column(db.String)
+    seeking_venue = db.Column(db.String)
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Show(db.Model):
@@ -67,7 +65,6 @@ class Show(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), nullable=False)
     start_time = db.Column(db.DateTime, nullable=False)
 
-#print("One Time Only")
 db.create_all()
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
@@ -100,7 +97,6 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: num_shows should be aggregated based on number of upcoming shows per venue.
 
   all_areas = Venue.query.with_entities(func.count(Venue.id), Venue.city, Venue.state).group_by(Venue.city, Venue.state).all()
   data = []
@@ -134,9 +130,6 @@ def search_venues():
       "name": result.name,
       "num_upcoming_shows": len(db.session.query(Show).filter(Show.venue_id == result.id).filter(Show.start_time > datetime.now()).all()),
     })
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for Hop should return "The Musical Hop".
-  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
   response={
     "count": len(search_result),
     "data": data
@@ -210,8 +203,6 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   eroor = False
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
   try:
     name = request.form['name']
     city = request.form.get('city', '')
@@ -222,7 +213,9 @@ def create_venue_submission():
     image_link = request.form.get('image_link', '')
     facebook_link = request.form.get('facebook_link', '')
     website_link = request.form.get('website_link', '')
-    venue = Venue(name=name,city=city,state=state,address=addr,phone=phone,facebook_link=facebook_link,image_link=image_link,website_link=website_link,genres=genres)
+    seeking_talent = request.form.get('seeking_talent', '')
+    seeking_description = request.form.get('seeking_description', '')
+    venue = Venue(name=name,city=city,state=state,address=addr,phone=phone,facebook_link=facebook_link,image_link=image_link,website_link=website_link,genres=genres,seeking_talent=seeking_talent,seeking_description=seeking_description)
     db.session.add(venue)
     db.session.commit()
     flash('Venue ' + name + ' was successfully listed!')
@@ -263,29 +256,25 @@ def edit_venue(venue_id):
   venue={
     "id": venue_db.id,
     "name": venue_db.name,
-    #TODO add genres
-    #"genres": venue_db.genres,
     "address": venue_db.address,
     "city": venue_db.city,
     "state": venue_db.state,
     "phone": venue_db.phone,
+    "genres": venue_db.genres,
     "facebook_link": venue_db.facebook_link,
-    # TODO add seeking_talent,
-    #"seeking_talent": True,
-    #"seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
+    "website_link": venue_db.website_link,
+    "seeking_talent": venue_db.seeking_talent,
+    "seeking_description": venue_db.seeking_description,
+
     "image_link": venue_db.image_link
   }
-  # TODO: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=venue)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
   eroor = False
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
   try:
     venue_db = Venue.query.get(venue_id)
-    #venue_db = Venue.query.filter(Venue.id == venue_id).first()
     if not venue_db:
      return render_template('errors/404.html')
 
@@ -294,9 +283,11 @@ def edit_venue_submission(venue_id):
     venue_db.state = request.form.get('state', '')
     venue_db.address = request.form.get('address', '')
     venue_db.phone = request.form.get('phone', '')
+    venue_db.genres = request.form.get('genres', '')
     venue_db.image_link = request.form.get('image_link', '')
     venue_db.facebook_link = request.form.get('facebook_link', '')
-
+    venue_db.seeking_talent = request.form.get('seeking_talent', '')
+    venue_db.seeking_description = request.form.get('seeking_description', '')
     db.session.commit()
     flash('Venue ' + venue_db.name + ' was successfully updated!')
   except Exception as e:
@@ -306,8 +297,6 @@ def edit_venue_submission(venue_id):
   finally:
     db.session.close()
 
-  # TODO: take values from the form submitted, and update existing
-  # venue record with ID <venue_id> using the new attributes
   return redirect(url_for('show_venue', user_provided_venue_id = venue_id))
 
 #  ----------------------------------------------------------------
@@ -315,7 +304,6 @@ def edit_venue_submission(venue_id):
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  # TODO: replace with real data returned from querying the database
   all_artists = Artist.query.with_entities(Artist.id, Artist.name).all()
   data = []
 
@@ -329,9 +317,6 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
   search_term = request.form.get('search_term', '')
   search_result = db.session.query(Artist).filter(Artist.name.ilike(f'%{search_term}%')).all()
   data = []
@@ -342,9 +327,6 @@ def search_artists():
       "name": result.name,
       "num_upcoming_shows": len(db.session.query(Show).filter(Show.artist_id == result.id).filter(Show.start_time > datetime.now()).all()),
     })
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for Hop should return "The Musical Hop".
-  # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
   response={
     "count": len(search_result),
     "data": data
@@ -361,12 +343,6 @@ def show_artist(user_provided_artist_id):
   past_shows_query = db.session.query(Show,Venue).filter(Show.artist_id==user_provided_artist_id).filter(Show.start_time<datetime.now()).join(Venue, Show.venue_id == Venue.id)
   past_shows_db = past_shows_query.all()
   past_shows = []
-
-  #"venue_id": 1,
-  #"venue_name": "The Musical Hop",
-  #"venue_image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
-  #"start_time": "2
-
   for result in past_shows_db:
     past_shows.append({
       "venue_id": result.Venue.id,
@@ -426,6 +402,9 @@ def edit_artist(artist_id):
     "state": artist_db.state,
     "phone": artist_db.phone,
     "facebook_link": artist_db.facebook_link,
+    "website_link": artist_db.website_link,
+    "seeking_venue": artist_db.seeking_venue,
+    "seeking_description": artist_db.seeking_description,
     # add
     # TODO add seeking_talent, website
     #"seeking_venue": True,
@@ -454,6 +433,9 @@ def edit_artist_submission(artist_id):
     artist_db.phone = request.form.get('phone', '')
     artist_db.image_link = request.form.get('image_link', '')
     artist_db.facebook_link = request.form.get('facebook_link', '')
+    artist_db.website_link = request.form.get('website_link', '')
+    artist_db.seeking_venue = request.form.get('seeking_venue', '')
+    artist_db.seeking_description = request.form.get('seeking_description', '')
 
     db.session.commit()
     flash('Venue ' + artist_db.name + ' was successfully updated!')
@@ -488,7 +470,10 @@ def create_artist_submission():
     # TODO: genres multiple select not working
     image_link = request.form.get('image_link', '')
     facebook_link = request.form.get('facebook_link', '')
-    artist = Artist(name=name,city=city,state=state,phone=phone,genres=genres,facebook_link=facebook_link,image_link=image_link)
+    website_link = request.form.get('website_link', '')
+    seeking_venue = request.form.get('seeking_venue', '')
+    seeking_description = request.form.get('seeking_description', '')
+    artist = Artist(name=name,city=city,state=state,phone=phone,genres=genres,facebook_link=facebook_link,image_link=image_link,website_link=website_link,seeking_venue=seeking_venue,seeking_description=seeking_description)
     db.session.add(artist)
     db.session.commit()
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
