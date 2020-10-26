@@ -13,6 +13,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
@@ -21,9 +22,6 @@ app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
-
-# TODO: connect to a local postgresql database
-
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -34,8 +32,6 @@ class SeekingTalent(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False)
     seeking_description = db.Column(db.String)
     seeking_talent = db.Column(db.String)
-
-
 
 #TODO add website
 #"website": "https://www.themusicalhop.com",
@@ -50,7 +46,7 @@ class Venue(db.Model):
     phone = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-
+    website_link = db.Column(db.String(300))
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
@@ -226,15 +222,15 @@ def create_venue_submission():
     phone = request.form.get('phone', '')
     image_link = request.form.get('image_link', '')
     facebook_link = request.form.get('facebook_link', '')
-
-    venue = Venue(name=name,city=city,state=state,address=addr,phone=phone,facebook_link=facebook_link,image_link=image_link)
+    website_link = request.form.get('website_link', '')
+    venue = Venue(name=name,city=city,state=state,address=addr,phone=phone,facebook_link=facebook_link,image_link=image_link,website_link=website_link)
     db.session.add(venue)
     db.session.commit()
     flash('Venue ' + name + ' was successfully listed!')
   except Exception as e:
     print('Failed to list a venue: '+ str(e))
     db.session.rollback()
-    flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+    flash('An error occurred. Venue ' + name + ' could not be listed.')
   finally:
     db.session.close()
   return render_template('pages/home.html')
