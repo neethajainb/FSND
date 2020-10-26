@@ -26,12 +26,6 @@ db = SQLAlchemy(app)
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-class SeekingTalent(db.Model):
-    __tablename__ = 'seekingtalent'
-    id = db.Column(db.Integer, primary_key=True)
-    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), nullable=False)
-    seeking_description = db.Column(db.String)
-    seeking_talent = db.Column(db.String)
 
 #TODO add website
 #"website": "https://www.themusicalhop.com",
@@ -47,6 +41,9 @@ class Venue(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String(300))
+    genres = db.Column(db.String(120))
+    seeking_description = db.Column(db.String)
+    seeking_talent = db.Column(db.String)
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
@@ -179,12 +176,13 @@ def show_venue(user_provided_venue_id):
   view_data = {
     "id": venue.id,
     "name": venue.name,
-    "genres": "",
+    "genres": venue.genres,
     "address": venue.address,
     "city": venue.city,
     "state": venue.state,
     "phone": venue.phone,
-    "website": "",
+    "genres": venue.genres,
+    "website_link": venue.website_link,
     "facebook_link": venue.facebook_link,
     "image_link": venue.image_link,
     "past_shows": past_shows,
@@ -193,7 +191,7 @@ def show_venue(user_provided_venue_id):
     "upcoming_shows_count": len(upcoming_shows),
   }
 
-  all_talents_db =  db.session.query(SeekingTalent).filter(SeekingTalent.venue_id==user_provided_venue_id).all()
+  all_talents_db =  db.session.query(Venue).filter(Venue.id==user_provided_venue_id).all()
   for result in all_talents_db:
     view_data["seeking_talent"] = result.seeking_talent
     view_data["seeking_description"] = result.seeking_description
@@ -219,11 +217,12 @@ def create_venue_submission():
     city = request.form.get('city', '')
     state = request.form.get('state', '')
     addr = request.form.get('address', '')
+    genres = request.form.get('genres', '')
     phone = request.form.get('phone', '')
     image_link = request.form.get('image_link', '')
     facebook_link = request.form.get('facebook_link', '')
     website_link = request.form.get('website_link', '')
-    venue = Venue(name=name,city=city,state=state,address=addr,phone=phone,facebook_link=facebook_link,image_link=image_link,website_link=website_link)
+    venue = Venue(name=name,city=city,state=state,address=addr,phone=phone,facebook_link=facebook_link,image_link=image_link,website_link=website_link,genres=genres)
     db.session.add(venue)
     db.session.commit()
     flash('Venue ' + name + ' was successfully listed!')
