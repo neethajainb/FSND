@@ -6,6 +6,9 @@
 		<h1 class="monospace">
 			{{ artist.name }}
 		</h1>
+		<h3>
+			<a href="/artists/{{ artist.id }}/edit"><button class="btn btn-primary btn-lg">Edit this artist</button></a>
+		</h3>
 		<p class="subtitle">
 			ID: {{ artist.id }}
 		</p>
@@ -33,7 +36,7 @@
 				<i class="fas fa-quote-left"></i> {{ artist.seeking_description }} <i class="fas fa-quote-right"></i>
 			</div>
 		</div>
-		{% else %}	
+		{% else %}
 		<p class="not-seeking">
 			<i class="fas fa-moon"></i> Not currently seeking performance venues
 		</p>
@@ -73,4 +76,3 @@
 </section>
 
 {% endblock %}
-
