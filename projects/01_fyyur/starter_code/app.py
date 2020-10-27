@@ -54,7 +54,9 @@ class Artist(db.Model):
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     seeking_description = db.Column(db.String)
+    website_link = db.Column(db.String(300))
     seeking_venue = db.Column(db.String)
+    seeking_description = db.Column(db.String)
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Show(db.Model):
@@ -286,6 +288,7 @@ def edit_venue_submission(venue_id):
     venue_db.genres = request.form.get('genres', '')
     venue_db.image_link = request.form.get('image_link', '')
     venue_db.facebook_link = request.form.get('facebook_link', '')
+    venue_db.website_link = request.form.get('website_link', '')
     venue_db.seeking_talent = request.form.get('seeking_talent', '')
     venue_db.seeking_description = request.form.get('seeking_description', '')
     db.session.commit()
@@ -371,9 +374,9 @@ def show_artist(user_provided_artist_id):
     "state": artist.state,
     "phone": artist.phone,
     "facebook_link": artist.facebook_link,
-    #TODO
-    "seeking_venue": "False",
-    "seeking_description": "TODO",
+    "website_link": artist.website_link,
+    "seeking_venue": artist.seeking_venue,
+    "seeking_description": artist.seeking_description,
     "image_link": artist.image_link,
     "past_shows": past_shows,
     "upcoming_shows": upcoming_shows,
@@ -405,24 +408,15 @@ def edit_artist(artist_id):
     "website_link": artist_db.website_link,
     "seeking_venue": artist_db.seeking_venue,
     "seeking_description": artist_db.seeking_description,
-    # add
-    # TODO add seeking_talent, website
-    #"seeking_venue": True,
-    #"seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
     "image_link": artist_db.image_link
   }
   return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
-  # artist record with ID <artist_id> using the new attributes
   eroor = False
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
   try:
     artist_db = Artist.query.get(artist_id)
-    #venue_db = Venue.query.filter(Venue.id == venue_id).first()
     if not artist_db:
      return render_template('errors/404.html')
 
@@ -458,9 +452,6 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-  # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
   try:
     name = request.form['name']
     city = request.form.get('city', '')
@@ -477,17 +468,13 @@ def create_artist_submission():
     db.session.add(artist)
     db.session.commit()
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  except:
+  except Exception as e: # work on python 2.x
+    print('Failed to list artist: '+ str(e))
     db.session.rollback()
-    flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+    flash('An error occurred. Artist ' + name + ' could not be listed.')
   finally:
     db.session.close()
   return render_template('pages/home.html')
-
-  # on successful db insert, flash success
-
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
 
 #TODO Use DELETE HTTP method instead of GET and remove /delete from URL
 # REST semantics
@@ -516,9 +503,6 @@ def delete_artist(artist_id):
 
 @app.route('/shows')
 def shows():
-  # displays list of shows at /shows
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
 
   data = []
   all_shows = Show.query.all()
@@ -541,7 +525,6 @@ def shows():
 
 @app.route('/shows/create', methods=['GET'])
 def create_shows():
-  # renders form. do not touch.
   form =  ShowForm()
   return render_template('forms/new_show.html', form=form)
 
@@ -563,14 +546,6 @@ def create_show_submission():
  finally:
    db.session.close()
  return render_template('pages/home.html')
-
-  # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
-
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-
 
 @app.errorhandler(404)
 def not_found_error(error):

@@ -237,7 +237,7 @@ class ArtistForm(Form):
     )
     website_link = StringField(
         'website_link'
-    )    
+    )
     seeking_venue = SelectField(
        'seeking_talent', validators=[DataRequired()],
         choices=[
