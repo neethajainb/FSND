@@ -246,25 +246,24 @@ def edit_venue_submission(venue_id):
         if not venue_db:
             return render_template('errors/404.html')
 
-        venue_db.name = request.form['name']
-        venue_db.city = request.form.get('city', '')
-        venue_db.state = request.form.get('state', '')
-        venue_db.address = request.form.get('address', '')
-        venue_db.phone = request.form.get('phone', '')
-        venue_db.genres = request.form.get('genres', '')
-        venue_db.image_link = request.form.get('image_link', '')
-        venue_db.facebook_link = request.form.get('facebook_link', '')
-        venue_db.website_link = request.form.get('website_link', '')
-        venue_db.seeking_talent = request.form.get('seeking_talent', '')
-        venue_db.seeking_description = request.form.get('seeking_description', '')
-        db.session.commit()
-        flash('Venue ' + venue_db.name + ' was successfully updated!')
-    except Exception as e:
-        print('Failed to update a venue: ' + str(e))
-        db.session.rollback()
-        flash('An error occurred. Venue ' + request.form['name'] + ' could not be updated.')
-    finally:
-        db.session.close()
+        form = VenueForm(request.form, meta={'csrf': False})
+        if form.validate():
+            try:
+                venue = Venue()
+                form.populate_obj(venue)
+                db.session.commit()
+                flash('Venue ' + venue_db.name + ' was successfully updated!')
+            except ValueError as e:
+                print('Failed to update a venue: ' + str(e))
+                flash('An error occurred. Venue ' + request.form['name'] + ' could not be updated.')
+                db.session.rollback()
+            finally:
+                db.session.close()
+        else:
+            message = []
+            for field, err in form.errors.items():
+                message.append(field + ' ' + '|'.join(err))
+            flash('Errors ' + str(message))
 
     return redirect(url_for('show_venue', user_provided_venue_id=venue_id))
 
