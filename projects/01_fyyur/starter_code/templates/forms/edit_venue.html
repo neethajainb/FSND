@@ -30,7 +30,7 @@
       <div class="form-group">
         <label for="genres">Genres</label>
         <small>Ctrl+Click to select multiple</small>
-        {{ form.genres(class_ = 'form-control', placeholder='Genres, separated by commas', id=form.allgenres, autofocus = true) }}
+        {{ form.genres(class_ = 'form-control', placeholder='Genres, separated by commas', id=form.allgenres, autofocus = true, value = venue.genres) }}
       </div>
       <div class="form-group">
           <label for="image_link">Image Link</label>
@@ -42,7 +42,7 @@
       </div>
       <div class="form-group">
           <label for="website_link">Website Link</label>
-          {{ form.website_link(class_ = 'form-control', placeholder='http://', id=form.website, autofocus = true, value = venue.facebook_link ) }}
+          {{ form.website_link(class_ = 'form-control', placeholder='http://', id=form.website, autofocus = true, value = venue.website_link ) }}
       </div>
       <div class="form-group">
           <label>Seeking talent and description</label>
