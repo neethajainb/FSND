@@ -132,16 +132,15 @@ def show_venue(user_provided_venue_id):
             "artist_image_link": result.Artist.image_link,
             "start_time": result.Show.start_time.strftime("%Y-%m-%d %H:%M:%S")
         })
-
+    gen = venue.genres.replace('{', '').replace('}', '').split(',')
     view_data = {
         "id": venue.id,
         "name": venue.name,
-        "genres": venue.genres,
+        "genres": gen,
         "address": venue.address,
         "city": venue.city,
         "state": venue.state,
         "phone": venue.phone,
-        "genres": venue.genres,
         "website_link": venue.website_link,
         "facebook_link": venue.facebook_link,
         "image_link": venue.image_link,
@@ -160,6 +159,7 @@ def show_venue(user_provided_venue_id):
     return render_template('pages/show_venue.html', venue=view_data)
 
 
+#  ----------------------------------------------------------------
 #  Create Venue
 #  ----------------------------------------------------------------
 
@@ -256,7 +256,7 @@ def edit_venue_submission(venue_id):
     except Exception as e:
         print('Failed to update a venue: ' + str(e))
         db.session.rollback()
-        flash('An error occurred. Venue ' + data.name + ' could not be updated.')
+        flash('An error occurred. Venue ' + venue_db.name + ' could not be updated.')
     finally:
         db.session.close()
 
@@ -424,6 +424,7 @@ def create_artist_form():
 def create_artist_submission():
     try:
         artist = Artist()
+        form = VenueForm(request.form)
         form.populate_obj(artist)
         db.session.add(artist)
         db.session.commit()
