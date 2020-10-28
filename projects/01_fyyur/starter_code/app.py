@@ -132,11 +132,10 @@ def show_venue(user_provided_venue_id):
             "artist_image_link": result.Artist.image_link,
             "start_time": result.Show.start_time.strftime("%Y-%m-%d %H:%M:%S")
         })
-    gen = venue.genres.replace('{', '').replace('}', '').split(',')
     view_data = {
         "id": venue.id,
         "name": venue.name,
-        "genres": gen,
+        "genres": venue.genres,
         "address": venue.address,
         "city": venue.city,
         "state": venue.state,
@@ -241,29 +240,28 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-    try:
-        venue_db = Venue.query.get(venue_id)
-        if not venue_db:
-            return render_template('errors/404.html')
+    venue_db = Venue.query.get(venue_id)
+    if not venue_db:
+        return render_template('errors/404.html')
 
-        form = VenueForm(request.form, meta={'csrf': False})
-        if form.validate():
-            try:
-                venue = Venue()
-                form.populate_obj(venue)
-                db.session.commit()
-                flash('Venue ' + venue_db.name + ' was successfully updated!')
-            except ValueError as e:
-                print('Failed to update a venue: ' + str(e))
-                flash('An error occurred. Venue ' + request.form['name'] + ' could not be updated.')
-                db.session.rollback()
-            finally:
-                db.session.close()
-        else:
-            message = []
-            for field, err in form.errors.items():
-                message.append(field + ' ' + '|'.join(err))
-            flash('Errors ' + str(message))
+    form = VenueForm(request.form, meta={'csrf': False})
+    if form.validate():
+        try:
+            form.populate_obj(venue_db)
+            #Here always use database object and with below it would simply write
+            db.session.commit()
+            flash('Venue ' + venue_db.name + ' was successfully updated!')
+        except ValueError as e:
+            print('Failed to update a venue: ' + str(e))
+            flash('An error occurred. Venue ' + request.form['name'] + ' could not be updated.')
+            db.session.rollback()
+        finally:
+            db.session.close()
+    else:
+        message = []
+        for field, err in form.errors.items():
+            message.append(field + ' ' + '|'.join(err))
+        flash('Errors ' + str(message))
 
     return redirect(url_for('show_venue', user_provided_venue_id=venue_id))
 
@@ -358,7 +356,31 @@ def show_artist(user_provided_artist_id):
     data = list(filter(lambda d: d['id'] == user_provided_artist_id, [data]))[0]
     return render_template('pages/show_artist.html', artist=data)
 
+@app.route('/artists/<int:artist_id>/edit', methods=['POST'])
+def edit_artist_submission(artist_id):
+    artist_db = Artist.query.get(artist_id)
+    if not artist_db:
+        return render_template('errors/404.html')
+    form = ArtistForm(request.form, meta={'csrf': False})
+    if form.validate():
+        try:
+            form.populate_obj(artist_db)
+            db.session.commit()
+            flash('Artist ' + artist_db.name + ' was successfully updated!')
+        except Exception as e:
+            print('Failed to update a Artist: ' + str(e))
+            db.session.rollback()
+            flash('An error occurred. Artist ' + data.name + ' could not be updated.')
+        finally:
+            db.session.close()
+    else:
+        message = []
+        for field, err in form.errors.items():
+            message.append(field + ' ' + '|'.join(err))
+        flash('Errors ' + str(message))
 
+    return redirect(url_for('show_artist', user_provided_artist_id=artist_id))
+    
 #  Update
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
@@ -385,34 +407,6 @@ def edit_artist(artist_id):
     return render_template('forms/edit_artist.html', form=form, artist=artist)
 
 
-@app.route('/artists/<int:artist_id>/edit', methods=['POST'])
-def edit_artist_submission(artist_id):
-    try:
-        artist_db = Artist.query.get(artist_id)
-        if not artist_db:
-            return render_template('errors/404.html')
-
-        artist_db.name = request.form['name']
-        artist_db.city = request.form.get('city', '')
-        artist_db.state = request.form.get('state', '')
-        artist_db.address = request.form.get('address', '')
-        artist_db.phone = request.form.get('phone', '')
-        artist_db.image_link = request.form.get('image_link', '')
-        artist_db.facebook_link = request.form.get('facebook_link', '')
-        artist_db.website_link = request.form.get('website_link', '')
-        artist_db.seeking_venue = request.form.get('seeking_venue', '')
-        artist_db.seeking_description = request.form.get('seeking_description', '')
-
-        db.session.commit()
-        flash('Venue ' + artist_db.name + ' was successfully updated!')
-    except Exception as e:
-        print('Failed to update a venue: ' + str(e))
-        db.session.rollback()
-        flash('An error occurred. Venue ' + data.name + ' could not be updated.')
-    finally:
-        db.session.close()
-
-    return redirect(url_for('show_artist', user_provided_artist_id=artist_id))
 
 
 #  Create Artist
