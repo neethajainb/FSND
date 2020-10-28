@@ -429,19 +429,28 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-    try:
-        artist = Artist()
-        form = VenueForm(request.form)
-        form.populate_obj(artist)
-        db.session.add(artist)
-        db.session.commit()
-        flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    except Exception as e:  # work on python 2.x
-        print('Failed to list artist: ' + str(e))
-        db.session.rollback()
-        flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
-    finally:
-        db.session.close()
+    eroor = False
+    form = ArtistForm(request.form, meta={'csrf': False})
+    if form.validate():
+        try:
+            artist = Artist()
+            form = ArtistForm(request.form, meta={'csrf': False})
+            form.populate_obj(artist)
+            db.session.add(artist)
+            db.session.commit()
+            flash('Artist ' + request.form['name'] + ' was successfully listed!')
+        except Exception as e:  # work on python 2.x
+            print('Failed to list artist: ' + str(e))
+            db.session.rollback()
+            flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+        finally:
+            db.session.close()
+    else:
+        message = []
+        for field, err in form.errors.items():
+            message.append(field + ' ' + '|'.join(err))
+        flash('Errors ' + str(message))
+
     return render_template('pages/home.html')
 
 
