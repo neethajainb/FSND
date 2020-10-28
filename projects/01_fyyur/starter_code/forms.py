@@ -4,7 +4,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SelectMultipleField, BooleanField, DateTimeField
 from wtforms.validators import DataRequired, URL
 
-state_choices=[
+state_choices = [
     ('AL', 'AL'),
     ('AK', 'AK'),
     ('AZ', 'AZ'),
@@ -58,7 +58,7 @@ state_choices=[
     ('WY', 'WY'),
 ]
 
-genres_choices=[
+genres_choices = [
     ('Alternative', 'Alternative'),
     ('Blues', 'Blues'),
     ('Classical', 'Classical'),
@@ -79,6 +79,7 @@ genres_choices=[
     ('Soul', 'Soul'),
     ('Other', 'Other'),
 ]
+
 
 class ShowForm(FlaskForm):
     name = StringField(
@@ -109,7 +110,7 @@ class VenueForm(FlaskForm):
     )
     state = SelectField(
         'state', validators=[DataRequired()],
-        choices = state_choices
+        choices=state_choices
     )
     address = StringField(
         'address', validators=[DataRequired()]
@@ -130,7 +131,7 @@ class VenueForm(FlaskForm):
     genres = SelectMultipleField(
         # TODO implement enum restriction
         'genres', validators=[DataRequired()],
-        choices = genres_choices
+        choices=genres_choices
     )
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
@@ -146,7 +147,7 @@ class ArtistForm(FlaskForm):
     )
     state = SelectField(
         'state', validators=[DataRequired()],
-        choices = state_choices
+        choices=state_choices
     )
     phone = StringField(
         # TODO implement validation logic for state
@@ -158,7 +159,7 @@ class ArtistForm(FlaskForm):
     genres = SelectMultipleField(
         # TODO implement enum restriction
         'genres', validators=[DataRequired()],
-        choices = genres_choices
+        choices=genres_choices
     )
     facebook_link = StringField(
         # TODO implement enum restriction
