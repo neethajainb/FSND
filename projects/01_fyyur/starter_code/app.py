@@ -172,28 +172,17 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
     eroor = False
+    form = VenueForm(request.form)
     try:
-        name = request.form['name']
-        city = request.form.get('city', '')
-        state = request.form.get('state', '')
-        addr = request.form.get('address', '')
-        genres = request.form.get('genres', '')
-        phone = request.form.get('phone', '')
-        image_link = request.form.get('image_link', '')
-        facebook_link = request.form.get('facebook_link', '')
-        website_link = request.form.get('website_link', '')
-        seeking_talent = request.form.get('seeking_talent', '')
-        seeking_description = request.form.get('seeking_description', '')
-        venue = Venue(name=name, city=city, state=state, address=addr, phone=phone, facebook_link=facebook_link,
-                      image_link=image_link, website_link=website_link, genres=genres, seeking_talent=seeking_talent,
-                      seeking_description=seeking_description)
+        venue = Venue()
+        form.populate_obj(venue)
         db.session.add(venue)
         db.session.commit()
-        flash('Venue ' + name + ' was successfully listed!')
-    except Exception as e:
-        print('Failed to list a venue: ' + str(e))
+        flash('Venue ' + venue.name + ' was successfully listed!')
+    except ValueError as e:
+        print(e)
+        flash('An error occurred. Venue ' + venue.name + ' could not be listed.')
         db.session.rollback()
-        flash('An error occurred. Venue ' + name + ' could not be listed.')
     finally:
         db.session.close()
     return render_template('pages/home.html')
@@ -434,27 +423,15 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
     try:
-        name = request.form['name']
-        city = request.form.get('city', '')
-        state = request.form.get('state', '')
-        phone = request.form.get('phone', '')
-        genres = request.form.get('genres', '')
-        # TODO: genres multiple select not working
-        image_link = request.form.get('image_link', '')
-        facebook_link = request.form.get('facebook_link', '')
-        website_link = request.form.get('website_link', '')
-        seeking_venue = request.form.get('seeking_venue', '')
-        seeking_description = request.form.get('seeking_description', '')
-        artist = Artist(name=name, city=city, state=state, phone=phone, genres=genres, facebook_link=facebook_link,
-                        image_link=image_link, website_link=website_link, seeking_venue=seeking_venue,
-                        seeking_description=seeking_description)
+        artist = Artist()
+        form.populate_obj(artist)
         db.session.add(artist)
         db.session.commit()
         flash('Artist ' + request.form['name'] + ' was successfully listed!')
     except Exception as e:  # work on python 2.x
         print('Failed to list artist: ' + str(e))
         db.session.rollback()
-        flash('An error occurred. Artist ' + name + ' could not be listed.')
+        flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
     finally:
         db.session.close()
     return render_template('pages/home.html')
