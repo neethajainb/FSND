@@ -2,16 +2,16 @@
 # Imports
 # ----------------------------------------------------------------------------#
 
+import logging
+from logging import Formatter, FileHandler
+
 import babel
 import dateutil.parser
-import logging
 from flask import render_template, request, flash, redirect, url_for
-from logging import Formatter, FileHandler
-from sqlalchemy import func
-
 # User Code
 from forms import *
 from models import *
+from sqlalchemy import func
 
 
 def format_datetime(value, format='medium'):
@@ -33,24 +33,24 @@ app.jinja_env.filters['datetime'] = format_datetime
 @app.route('/')
 def index():
     venues = Venue.query.limit(10)
-    recentVenues = []
+    recent_venues = []
 
     for venue in venues:
-        recentVenues.append({
+        recent_venues.append({
             "id": venue.id,
             "name": venue.name,
         })
 
     artists = Artist.query.limit(10)
-    recentArtists = []
+    recent_artists = []
 
     for artist in artists:
-        recentArtists.append({
+        recent_artists.append({
             "id": artist.id,
             "name": artist.name,
         })
 
-    return render_template('pages/home.html', recentlyListedVenues=recentVenues, recentlyListedArtist=recentArtists);
+    return render_template('pages/home.html', recentlyListedVenues=recent_venues, recentlyListedArtist=recent_artists)
 
 
 #  Venues
@@ -78,7 +78,7 @@ def venues():
             "venues": venue_data
         })
 
-    return render_template('pages/venues.html', areas=data);
+    return render_template('pages/venues.html', areas=data)
 
 
 @app.route('/venues/search', methods=['POST'])
@@ -171,7 +171,6 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-    eroor = False
     form = VenueForm(request.form, meta={'csrf': False})
     if form.validate():
         try:
@@ -182,7 +181,7 @@ def create_venue_submission():
             flash('Venue ' + venue.name + ' was successfully listed!')
         except ValueError as e:
             print(e)
-            flash('An error occurred. Venue ' + venue.name + ' could not be listed.')
+            flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
             db.session.rollback()
         finally:
             db.session.close()
@@ -202,13 +201,13 @@ def delete_venue(venue_id):
         venue = Venue.query.get(venue_id)
         db.session.delete(venue)
         db.session.commit()
-    except:
+    except Exception as e:
         error = True
         db.session.rollback()
     finally:
         db.session.close()
     if error:
-        flash(f'An error occurred. Venue {venue.name} could not be deleted.')
+        flash(f'An error occurred. Venue {venue_id} could not be deleted.')
     if not error:
         flash(f'Venue {venue.name} was successfully deleted.')
 
@@ -263,7 +262,7 @@ def edit_venue_submission(venue_id):
     except Exception as e:
         print('Failed to update a venue: ' + str(e))
         db.session.rollback()
-        flash('An error occurred. Venue ' + venue_db.name + ' could not be updated.')
+        flash('An error occurred. Venue ' + request.form['name'] + ' could not be updated.')
     finally:
         db.session.close()
 
@@ -389,7 +388,6 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-    eroor = False
     try:
         artist_db = Artist.query.get(artist_id)
         if not artist_db:
@@ -429,7 +427,6 @@ def create_artist_form():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-    eroor = False
     form = ArtistForm(request.form, meta={'csrf': False})
     if form.validate():
         try:
@@ -463,13 +460,14 @@ def delete_artist(artist_id):
         artist = Artist.query.get(artist_id)
         db.session.delete(artist)
         db.session.commit()
-    except:
+    except Exception as e:
+        print('Failed to delete artist: ' + str(e))
         error = True
         db.session.rollback()
     finally:
         db.session.close()
     if error:
-        flash(f'An error occurred. Artist {artist.name} could not be deleted.')
+        flash(f'An error occurred. Artist {artist_id} could not be deleted.')
     if not error:
         flash(f'Artist {artist.name} was successfully deleted.')
 
@@ -484,9 +482,8 @@ def shows():
     data = []
     all_shows = Show.query.all()
     for show in all_shows:
-        shows_query = db.session.query(Show, Artist, Venue).filter(Show.id == show.id).join(Artist,
-            Artist.id == Show.artist_id).join(
-            Venue, Venue.id == Show.venue_id)
+        shows_query = db.session.query(Show, Artist, Venue).\
+            filter(Show.id == show.id).join(Artist, Artist.id == Show.artist_id).join(Venue, Venue.id == Show.venue_id)
         result_set = shows_query.all()
         print(result_set)
         for result in result_set:
@@ -510,7 +507,6 @@ def create_shows():
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
-    eroor = False
     form = ShowForm(request.form, meta={'csrf': False})
     if form.validate():
         try:
