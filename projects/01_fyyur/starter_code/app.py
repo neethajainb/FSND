@@ -510,21 +510,27 @@ def create_shows():
 
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
-    try:
-        name = request.form['name']
-        artist_id = request.form['artist_id']
-        venue_id = request.form.get('venue_id', '')
-        start_time = request.form.get('start_time', '')
-        show = Show(name=name, artist_id=artist_id, venue_id=venue_id, start_time=start_time)
-        db.session.add(show)
-        db.session.commit()
-        flash('Show ' + name + ' was successfully listed!')
-    except Exception as e:  # work on python 2.x
-        print('Failed to list a show: ' + str(e))
-        db.session.rollback()
-        flash('An error occurred. Show ' + name + ' could not be listed.')
-    finally:
-        db.session.close()
+    eroor = False
+    form = ShowForm(request.form, meta={'csrf': False})
+    if form.validate():
+        try:
+            show = Show()
+            form.populate_obj(show)
+            db.session.add(show)
+            db.session.commit()
+            flash('Show ' + show.name + ' was successfully listed!')
+        except Exception as e:  # work on python 2.x
+            print('Failed to list a show: ' + str(e))
+            db.session.rollback()
+            flash('An error occurred. Show ' + name + ' could not be listed.')
+        finally:
+            db.session.close()
+    else:
+        message = []
+        for field, err in form.errors.items():
+            message.append(field + ' ' + '|'.join(err))
+        flash('Errors ' + str(message))
+
     return render_template('pages/home.html')
 
 
