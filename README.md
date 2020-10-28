@@ -2,6 +2,12 @@ This is the public repository for Udacity's Full-Stack Nanodegree program.
 
 
 # Fyyur project 
+
+# Clone repository
+```
+git clone git@github.com:neethajainb/FSND.git
+```
+
 ## Install and Build
 ```
 cd /Users/neethajain/Documents/fullstack/project/runtime/environments/
