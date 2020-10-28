@@ -10,8 +10,8 @@ from logging import Formatter, FileHandler
 from sqlalchemy import func
 
 # User Code
-from .forms import *
-from .models import *
+from forms import *
+from models import *
 
 
 def format_datetime(value, format='medium'):
