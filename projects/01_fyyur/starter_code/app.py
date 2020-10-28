@@ -50,7 +50,9 @@ def index():
             "name": artist.name,
         })
 
-    return render_template('pages/home.html', recentlyListedVenues=recent_venues, recentlyListedArtist=recent_artists)
+    return render_template('pages/home.html',
+                           recentlyListedVenues=recent_venues,
+                           recentlyListedArtist=recent_artists)
 
 
 #  Venues
@@ -58,19 +60,23 @@ def index():
 
 @app.route('/venues')
 def venues():
-    all_areas = Venue.query.with_entities(func.count(Venue.id), Venue.city, Venue.state).group_by(Venue.city,
-                                                                                                  Venue.state).all()
+    all_areas = Venue.query.with_entities(func.count(Venue.id), Venue.city,
+                                          Venue.state).group_by(Venue.city,
+                                                                Venue.state).all()
     data = []
 
     for area in all_areas:
-        area_venues = Venue.query.filter_by(state=area.state).filter_by(city=area.city).all()
+        area_venues = Venue.query.filter_by(state=area.state).filter_by(
+            city=area.city).all()
         venue_data = []
         for venue in area_venues:
             venue_data.append({
                 "id": venue.id,
                 "name": venue.name,
                 "num_upcoming_shows": len(
-                    db.session.query(Show).filter(Show.venue_id == 1).filter(Show.start_time > datetime.now()).all())
+                    db.session.query(Show).filter(
+                        Show.venue_id == 1).filter(
+                        Show.start_time > datetime.now()).all())
             })
         data.append({
             "city": area.city,
@@ -84,14 +90,16 @@ def venues():
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
     search_term = request.form.get('search_term', '')
-    search_result = db.session.query(Venue).filter(Venue.name.ilike(f'%{search_term}%')).all()
+    search_result = db.session.query(Venue).filter(
+        Venue.name.ilike(f'%{search_term}%')).all()
     data = []
 
     for result in search_result:
         data.append({
             "id": result.id,
             "name": result.name,
-            "num_upcoming_shows": len(db.session.query(Show).filter(Show.venue_id == result.id).filter(
+            "num_upcoming_shows": len(db.session.query(Show).filter(
+                Show.venue_id == result.id).filter(
                 Show.start_time > datetime.now()).all()),
         })
     response = {
@@ -109,8 +117,10 @@ def show_venue(user_provided_venue_id):
     if not venue:
         return render_template('errors/404.html')
 
-    past_shows_db = db.session.query(Show, Artist).filter(Show.venue_id == user_provided_venue_id).filter(
-        Show.start_time < datetime.now()).join(Artist, Show.artist_id == Artist.id).all()
+    past_shows_db = db.session.query(Show, Artist).filter(
+        Show.venue_id == user_provided_venue_id).filter(
+        Show.start_time < datetime.now()).join(Artist,
+                                               Show.artist_id == Artist.id).all()
     past_shows = []
 
     for result in past_shows_db:
@@ -118,11 +128,14 @@ def show_venue(user_provided_venue_id):
             "artist_id": result.Artist.id,
             "artist_image_link": result.Artist.image_link,
             "artist_name": result.Artist.name,
-            "start_time": result.Show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+            "start_time": result.Show.start_time.strftime(
+                '%Y-%m-%d %H:%M:%S')
         })
 
-    upcoming_shows_db = db.session.query(Show, Artist).filter(Show.venue_id == user_provided_venue_id).filter(
-        Show.start_time > datetime.now()).join(Artist, Show.artist_id == Artist.id).all()
+    upcoming_shows_db = db.session.query(Show, Artist).filter(
+        Show.venue_id == user_provided_venue_id).filter(
+        Show.start_time > datetime.now()).join(Artist,
+                                               Show.artist_id == Artist.id).all()
     upcoming_shows = []
 
     for result in upcoming_shows_db:
@@ -130,7 +143,8 @@ def show_venue(user_provided_venue_id):
             "artist_id": result.Artist.id,
             "artist_name": result.Artist.name,
             "artist_image_link": result.Artist.image_link,
-            "start_time": result.Show.start_time.strftime("%Y-%m-%d %H:%M:%S")
+            "start_time": result.Show.start_time.strftime(
+                "%Y-%m-%d %H:%M:%S")
         })
     view_data = {
         "id": venue.id,
@@ -149,12 +163,15 @@ def show_venue(user_provided_venue_id):
         "upcoming_shows_count": len(upcoming_shows),
     }
 
-    all_talents_db = db.session.query(Venue).filter(Venue.id == user_provided_venue_id).all()
+    all_talents_db = db.session.query(Venue).filter(
+        Venue.id == user_provided_venue_id).all()
     for result in all_talents_db:
         view_data["seeking_talent"] = result.seeking_talent
         view_data["seeking_description"] = result.seeking_description
 
-    view_data = list(filter(lambda d: d['id'] == user_provided_venue_id, [view_data]))[0]
+    view_data = \
+        list(filter(lambda d: d['id'] == user_provided_venue_id,
+                    [view_data]))[0]
     return render_template('pages/show_venue.html', venue=view_data)
 
 
@@ -180,7 +197,8 @@ def create_venue_submission():
             flash('Venue ' + venue.name + ' was successfully listed!')
         except ValueError as e:
             print(e)
-            flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+            flash('An error occurred. Venue ' + request.form[
+                'name'] + ' could not be listed.')
             db.session.rollback()
         finally:
             db.session.close()
@@ -248,12 +266,13 @@ def edit_venue_submission(venue_id):
     if form.validate():
         try:
             form.populate_obj(venue_db)
-            #Here always use database object and with below it would simply write
+            # Here always use database object and with below it would simply write
             db.session.commit()
             flash('Venue ' + venue_db.name + ' was successfully updated!')
         except ValueError as e:
             print('Failed to update a venue: ' + str(e))
-            flash('An error occurred. Venue ' + request.form['name'] + ' could not be updated.')
+            flash('An error occurred. Venue ' + request.form[
+                'name'] + ' could not be updated.')
             db.session.rollback()
         finally:
             db.session.close()
@@ -286,14 +305,16 @@ def artists():
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
     search_term = request.form.get('search_term', '')
-    search_result = db.session.query(Artist).filter(Artist.name.ilike(f'%{search_term}%')).all()
+    search_result = db.session.query(Artist).filter(
+        Artist.name.ilike(f'%{search_term}%')).all()
     data = []
 
     for result in search_result:
         data.append({
             "id": result.id,
             "name": result.name,
-            "num_upcoming_shows": len(db.session.query(Show).filter(Show.artist_id == result.id).filter(
+            "num_upcoming_shows": len(db.session.query(Show).filter(
+                Show.artist_id == result.id).filter(
                 Show.start_time > datetime.now()).all()),
         })
     response = {
@@ -311,8 +332,10 @@ def show_artist(user_provided_artist_id):
     if not artist:
         return render_template('errors/404.html')
 
-    past_shows_query = db.session.query(Show, Venue).filter(Show.artist_id == user_provided_artist_id).filter(
-        Show.start_time < datetime.now()).join(Venue, Show.venue_id == Venue.id)
+    past_shows_query = db.session.query(Show, Venue).filter(
+        Show.artist_id == user_provided_artist_id).filter(
+        Show.start_time < datetime.now()).join(Venue,
+                                               Show.venue_id == Venue.id)
     past_shows_db = past_shows_query.all()
     past_shows = []
     for result in past_shows_db:
@@ -320,11 +343,14 @@ def show_artist(user_provided_artist_id):
             "venue_id": result.Venue.id,
             "venue_name": result.Venue.name,
             "venue_image_link": result.Venue.image_link,
-            "start_time": result.Show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+            "start_time": result.Show.start_time.strftime(
+                '%Y-%m-%d %H:%M:%S')
         })
 
-    upcoming_shows_db = db.session.query(Show, Venue).filter(Show.artist_id == user_provided_artist_id).filter(
-        Show.start_time > datetime.now()).join(Venue, Show.venue_id == Venue.id).all()
+    upcoming_shows_db = db.session.query(Show, Venue).filter(
+        Show.artist_id == user_provided_artist_id).filter(
+        Show.start_time > datetime.now()).join(Venue,
+                                               Show.venue_id == Venue.id).all()
     upcoming_shows = []
 
     for result in upcoming_shows_db:
@@ -332,7 +358,8 @@ def show_artist(user_provided_artist_id):
             "venue_id": result.Venue.id,
             "venue_name": result.Venue.name,
             "venue_image_link": result.Venue.image_link,
-            "start_time": result.Show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+            "start_time": result.Show.start_time.strftime(
+                '%Y-%m-%d %H:%M:%S')
         })
 
     data = {
@@ -353,8 +380,10 @@ def show_artist(user_provided_artist_id):
         "upcoming_shows_count": len(upcoming_shows),
     }
 
-    data = list(filter(lambda d: d['id'] == user_provided_artist_id, [data]))[0]
+    data = \
+    list(filter(lambda d: d['id'] == user_provided_artist_id, [data]))[0]
     return render_template('pages/show_artist.html', artist=data)
+
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
@@ -370,7 +399,8 @@ def edit_artist_submission(artist_id):
         except Exception as e:
             print('Failed to update a Artist: ' + str(e))
             db.session.rollback()
-            flash('An error occurred. Artist ' + data.name + ' could not be updated.')
+            flash(
+                'An error occurred. Artist ' + data.name + ' could not be updated.')
         finally:
             db.session.close()
     else:
@@ -379,8 +409,10 @@ def edit_artist_submission(artist_id):
             message.append(field + ' ' + '|'.join(err))
         flash('Errors ' + str(message))
 
-    return redirect(url_for('show_artist', user_provided_artist_id=artist_id))
-    
+    return redirect(
+        url_for('show_artist', user_provided_artist_id=artist_id))
+
+
 #  Update
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
@@ -404,9 +436,8 @@ def edit_artist(artist_id):
         "seeking_description": artist_db.seeking_description,
         "image_link": artist_db.image_link
     }
-    return render_template('forms/edit_artist.html', form=form, artist=artist)
-
-
+    return render_template('forms/edit_artist.html', form=form,
+                           artist=artist)
 
 
 #  Create Artist
@@ -428,11 +459,14 @@ def create_artist_submission():
             form.populate_obj(artist)
             db.session.add(artist)
             db.session.commit()
-            flash('Artist ' + request.form['name'] + ' was successfully listed!')
+            flash(
+                'Artist ' + request.form[
+                    'name'] + ' was successfully listed!')
         except Exception as e:  # work on python 2.x
             print('Failed to list artist: ' + str(e))
             db.session.rollback()
-            flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
+            flash('An error occurred. Artist ' + request.form[
+                'name'] + ' could not be listed.')
         finally:
             db.session.close()
     else:
@@ -460,7 +494,8 @@ def delete_artist(artist_id):
     finally:
         db.session.close()
     if error:
-        flash(f'An error occurred. Artist {artist_id} could not be deleted.')
+        flash(
+            f'An error occurred. Artist {artist_id} could not be deleted.')
     if not error:
         flash(f'Artist {artist.name} was successfully deleted.')
 
@@ -475,8 +510,10 @@ def shows():
     data = []
     all_shows = Show.query.all()
     for show in all_shows:
-        shows_query = db.session.query(Show, Artist, Venue).\
-            filter(Show.id == show.id).join(Artist, Artist.id == Show.artist_id).join(Venue, Venue.id == Show.venue_id)
+        shows_query = db.session.query(Show, Artist, Venue). \
+            filter(Show.id == show.id).join(Artist,
+                                            Artist.id == Show.artist_id).join(
+            Venue, Venue.id == Show.venue_id)
         result_set = shows_query.all()
         print(result_set)
         for result in result_set:
@@ -486,7 +523,8 @@ def shows():
                 "artist_id": result.Artist.id,
                 "artist_name": result.Artist.name,
                 "artist_image_link": result.Artist.image_link,
-                "start_time": result.Show.start_time.strftime('%Y-%m-%d %H:%M:%S')
+                "start_time": result.Show.start_time.strftime(
+                    '%Y-%m-%d %H:%M:%S')
             })
 
     return render_template('pages/shows.html', shows=data)
@@ -511,7 +549,8 @@ def create_show_submission():
         except Exception as e:  # work on python 2.x
             print('Failed to list a show: ' + str(e))
             db.session.rollback()
-            flash('An error occurred. Show ' + name + ' could not be listed.')
+            flash(
+                'An error occurred. Show ' + name + ' could not be listed.')
         finally:
             db.session.close()
     else:
@@ -536,7 +575,8 @@ def server_error(error):
 if not app.debug:
     file_handler = FileHandler('error.log')
     file_handler.setFormatter(
-        Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+        Formatter(
+            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
     )
     app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)
