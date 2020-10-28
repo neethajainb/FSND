@@ -1,25 +1,20 @@
-from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort
+from flask import Flask
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-import logging
-from logging import Formatter, FileHandler
-from flask_wtf import Form
 
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # App Config.
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 
 app = Flask(__name__)
 moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 
-#----------------------------------------------------------------------------#
 
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # Models.
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 class Venue(db.Model):
     __tablename__ = 'venue'
     id = db.Column(db.Integer, primary_key=True)
@@ -41,6 +36,7 @@ class Venue(db.Model):
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
+
 class Artist(db.Model):
     __tablename__ = 'artist'
     id = db.Column(db.Integer, primary_key=True)
@@ -56,10 +52,12 @@ class Artist(db.Model):
     seeking_venue = db.Column(db.String)
     seeking_description = db.Column(db.String)
     shows = db.relationship('Show', backref="artist", lazy=True)
+
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
     def __repr__(self):
-      return '<Artist {}>'.format(self.name)
+        return '<Artist {}>'.format(self.name)
+
 
 class Show(db.Model):
     __tablename__ = 'shows'
@@ -70,7 +68,8 @@ class Show(db.Model):
     start_time = db.Column(db.DateTime, nullable=False)
 
     def __repr__(self):
-       return '<Show {}{}>'.format(self.artist_id, self.venue_id)
+        return '<Show {}{}>'.format(self.artist_id, self.venue_id)
+
 
 db.create_all()
 
