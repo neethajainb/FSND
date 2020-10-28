@@ -36,15 +36,22 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-  return render_template('pages/home.html')
+  venues = Venue.query.all()
+  data = []
 
+  for venue in venues:
+    data.append({
+      "id": venue.id,
+      "name": venue.name,
+    })
+
+  return render_template('pages/home.html', recentlyListedVenues=data);
 
 #  Venues
 #  ----------------------------------------------------------------
 
 @app.route('/venues')
 def venues():
-
   all_areas = Venue.query.with_entities(func.count(Venue.id), Venue.city, Venue.state).group_by(Venue.city, Venue.state).all()
   data = []
 
