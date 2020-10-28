@@ -36,16 +36,27 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-  venues = Venue.query.all()
-  data = []
+  venues = Venue.query.limit(10)
+  recentVenues = []
 
   for venue in venues:
-    data.append({
+    recentVenues.append({
       "id": venue.id,
       "name": venue.name,
     })
 
-  return render_template('pages/home.html', recentlyListedVenues=data);
+  artists = Artist.query.limit(10)
+  recentArtists = []
+
+  for artist in artists:
+    recentArtists.append({
+      "id": artist.id,
+      "name": artist.name,
+    })
+
+
+
+  return render_template('pages/home.html', recentlyListedVenues=recentVenues, recentlyListedArtist=recentArtists);
 
 #  Venues
 #  ----------------------------------------------------------------

@@ -30,6 +30,19 @@
 				</li>
 			{% endfor %}
 		</ul>
+		<p class="lead">Top 10 recently listed artist.</p>
+		<ul class="items">
+			{% for artist in recentlyListedArtist %}
+				<li>
+					<a href="/artists/{{ artist.id }}">
+						<i class="fas fa-music"></i>
+						<div class="item">
+							<h5>{{ artist.name }}</h5>
+						</div>
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
 	</div>
 	<div class="col-sm-6 hidden-sm hidden-xs">
 		<img id="front-splash" src="{{ url_for('static',filename='img/front-splash.jpg') }}" alt="Front Photo of Musical Band" />
