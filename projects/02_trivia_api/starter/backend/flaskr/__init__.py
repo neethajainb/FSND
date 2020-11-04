@@ -8,18 +8,42 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+def paginate_questions(request, selection):
+    page = request.args.get('page', 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+
+    questions = [question.format() for question in selection]
+    current_questions = questions[start:end]
+
+    return current_questions
+
 def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
+  CORS(app)
   
+  @app.route('/')
+  def hello_world():
+        return jsonify({'message':'Hello, World!'})
+
   '''
   @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
   '''
+  #   CORS(app)
+  cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
 
   '''
   @TODO: Use the after_request decorator to set Access-Control-Allow
   '''
+  # CORS Headers 
+  @app.after_request
+  def after_request(response):
+      response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+      response.headers.add('Access-Control-Allow-Methods', 'GET,PATCH,POST,DELETE,OPTIONS')
+      return response
 
   '''
   @TODO: 
@@ -28,12 +52,43 @@ def create_app(test_config=None):
   '''
 
 
+  @app.route('/questions')
+  def retrieve_questions():
+     selection = Question.query.order_by(Question.id).all()
+     current_questions = paginate_questions(request, selection)
+     categories = Category.query.order_by(Category.type).all()
+     
+     if len(current_questions) == 0:
+      abort(404)
+
+     return jsonify({
+       'success': True,
+       'questions': current_questions,
+       'total_questions': len(selection),
+       'categories': {category.id: category.type for category in categories},
+       'current_category': None
+        })
+
+
   '''
   @TODO: 
   Create an endpoint to handle GET requests for questions, 
   including pagination (every 10 questions). 
   This endpoint should return a list of questions, 
   number of total questions, current category, categories. 
+
+ 
+               
+        categories = Category.query.order_by(Category.type).all()
+
+        
+        
+            'success': True,
+            'questions': current_questions,
+            'total_questions': len(selection),
+            'categories': {category.id: category.type for category in categories},
+            'current_category': None
+        })
 
   TEST: At this point, when you start the application
   you should see questions and categories generated,
@@ -100,5 +155,3 @@ def create_app(test_config=None):
   '''
   
   return app
-
-    
