@@ -3,6 +3,7 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
+from forms import *
 
 from models import setup_db, Question, Category
 
@@ -102,7 +103,7 @@ def create_app(test_config=None):
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
     try:
-        question = Question.query.(Question.id == question_id).one_or_none()
+        question = Question.query(Question.id == question_id).one_or_none()
         if question is None:
             abort(404)
 
@@ -134,36 +135,32 @@ def create_app(test_config=None):
   of the questions list in the "List" tab.  
   '''
   @app.route('/questions', methods=['POST'])
-    def create_question():
+  def create_question():
+    try:
       body = request.get_json()
-      
       new_question = body.get('question', None)
       new_answer = body.get('answer', None)
       new_difficulty = body.get('difficulty', None) 
       new_category = body.get('category', None)
+      print("create_question")
+      question = Question(question=new_question, answer=new_answer,
+                          difficulty=new_difficulty, category=new_category)
+      question.insert()
 
-      try:
-        question = Question(question=new_question, answer=new_answer,
-                            difficulty=new_difficulty, category=new_category)
-        question.insert()
+      selection = Question.query.order_by(Question.id).all()
+      current_questions = paginate_questions(request, selection)
 
-        selection = Question.query.order_by(Question.id).all()
-        current_questions = paginate_questions(request, selection)
-
-        return jsonify({
-          'success': True,
-          'created': question.id,
-          'question_created': question.id,
-          'questions': current_questions,
-          'total_questions': len(Question.query.all())
-        })
-
-      except:
+      return jsonify({
+        'success': True,
+        'created': question.id,
+        'question_created': question.id,
+        'questions': current_questions,
+        'total_questions': len(Question.query.all())
+      })
+    except Exception as e:
+        print(e)
         abort(422)
      
-    return app 
-
-
   '''
   @TODO: 
   Create a POST endpoint to get questions based on a search term. 
@@ -174,6 +171,21 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  @app.route('/questions/search', methods=['POST'])
+  def search_questions():
+    body = request.get_json()
+    search = body.get('searchTerm', None)
+
+    if search:
+      search_results = Question.query.filter(
+      Question.question.ilike(f'%{search_term}%')).all()
+
+    return jsonify({
+      'success': True,
+      'questions': [question.format() for question in search_results],
+      'total_questions': len(search_results),
+      'current_category': None
+    }) 
 
   '''
   @TODO: 
@@ -183,6 +195,7 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+
 
 
   '''
@@ -197,10 +210,43 @@ def create_app(test_config=None):
   and shown whether they were correct or not. 
   '''
 
+
   '''
   @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
-  
+  @app.errorhandler(404)
+  def not_found(error):
+    return jsonify({
+      "success": False,
+      "error": 404,
+      "message": "resource not found"
+    }), 404
+
+  @app.errorhandler(422)
+  def unprocessable(error):
+    return jsonify({
+      "success": False,
+      "error": 422,
+            "message": "unprocessable"
+    }), 422
+
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({
+      "success": False,
+      "error": 400,
+      "message": "bad request"
+    }), 400
+
+  @app.errorhandler(405)
+  def not_found(error):
+    return jsonify({
+      "success": False,
+      "error": 405,
+      "message": "method not allowed"
+    }), 405
+ 
+
   return app
