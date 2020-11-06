@@ -3,7 +3,6 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
-from forms import *
 
 from models import setup_db, Question, Category
 
@@ -174,11 +173,9 @@ def create_app(test_config=None):
   @app.route('/questions/search', methods=['POST'])
   def search_questions():
     body = request.get_json()
-    search = body.get('searchTerm', None)
+    search_term = body.get('searchTerm', None)
 
-    if search:
-      search_results = Question.query.filter(
-      Question.question.ilike(f'%{search_term}%')).all()
+    search_results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
 
     return jsonify({
       'success': True,
@@ -195,7 +192,19 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:id>/questions')
+  def get_questions_by_category(category_id):
+    try:
+      questions = Question.query.filter(Question.category == str(category_id)).all()
 
+      return jsonify({
+        'success': True,
+        'questions': [question.format() for question in questions],
+        'total_questions': len(questions),
+        'current_category': category_id
+      })
+    except:
+        abort(404)
 
 
   '''
@@ -209,7 +218,20 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
   '''
+  @app.route('/quizzes', methods=['POST'])
+  def play_quiz():
+    body = request.get_json()
+    previous = body.get('previous_questions')
+    category = body.get('quiz_category')
 
+    if ((category is None) or (previous is None)):
+      abort(400)  
+    
+    if (category['id'] == 0):
+       questions = Question.query.all()
+    else:
+      questions = Question.query.filter_by(category=category['id']).all() 
+      total = len(questions)
 
   '''
   @TODO: 
