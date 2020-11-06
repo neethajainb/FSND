@@ -164,6 +164,9 @@ def create_app(test_config=None):
 
     search_results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
 
+    if not search_results:
+      abort(404)
+
     # paginate the selection
     paginated = paginate_questions(request, search_results)
 
