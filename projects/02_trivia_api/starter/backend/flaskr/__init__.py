@@ -47,23 +47,6 @@ def create_app(test_config=None):
 
   '''
   @TODO: 
-  Create an endpoint to handle GET requests 
-  for all available categories.
-  '''
-  @app.route('/categories')
-  def get_categories():
-      categories = Category.query.order_by(Category.type).all()
-
-      if len(categories) == 0:
-          abort(404)
-
-      return jsonify({
-        'success': True,
-        'categories': {category.id: category.type for category in categories}
-         })
-
-  '''
-  @TODO: 
   Create an endpoint to handle GET requests for questions, 
   including pagination (every 10 questions). 
   This endpoint should return a list of questions, 
@@ -187,13 +170,30 @@ def create_app(test_config=None):
 
   '''
   @TODO: 
+  Create an endpoint to handle GET requests 
+  for all available categories.
+  '''
+  @app.route('/categories')
+  def get_categories():
+    categories = Category.query.order_by(Category.type).all()
+
+    if len(categories) == 0:
+        abort(404)
+
+    return jsonify({
+      'success': True,
+      'categories': {category.id: category.type for category in categories}
+       })
+
+  '''
+  @TODO: 
   Create a GET endpoint to get questions based on category. 
 
   TEST: In the "List" tab / main screen, clicking on one of the 
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
-  @app.route('/categories/<int:id>/questions')
+  @app.route('/categories/<int:category_id>/questions')
   def get_questions_by_category(category_id):
     try:
       questions = Question.query.filter(Question.category == str(category_id)).all()
