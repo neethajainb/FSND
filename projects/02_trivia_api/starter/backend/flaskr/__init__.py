@@ -84,12 +84,11 @@ def create_app(test_config=None):
   '''
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
-    try:
-      question = Question.query.filter(Question.id == question_id).one_or_none()
-      print("delete_question 2")
-      if question is None:
-          abort(404)
+    question = Question.query.filter(Question.id == question_id).one_or_none()
+    if question is None:
+      abort(404)
 
+    try:
       question.delete()
 
       all_questions = Question.query.order_by(Question.id).all()
@@ -119,12 +118,16 @@ def create_app(test_config=None):
   '''
   @app.route('/questions', methods=['POST'])
   def create_question():
+    body = request.get_json()
+    new_question = body.get('question', None)
+    new_answer = body.get('answer', None)
+    new_difficulty = body.get('difficulty', None) 
+    new_category = body.get('category', None)
+
+    if new_question is None or new_answer is None:
+      abort(422)
+
     try:
-      body = request.get_json()
-      new_question = body.get('question', None)
-      new_answer = body.get('answer', None)
-      new_difficulty = body.get('difficulty', None) 
-      new_category = body.get('category', None)
       print("create_question")
       question = Question(question=new_question, answer=new_answer,
                           difficulty=new_difficulty, category=new_category)
@@ -178,7 +181,6 @@ def create_app(test_config=None):
   '''
   @app.route('/categories')
   def get_categories():
-    print("here asdkjaslkdjaslkd")
     categories = Category.query.order_by(Category.type).all()
 
     if len(categories) == 0:
@@ -245,6 +247,27 @@ def create_app(test_config=None):
     
     questions = Question.query.filter_by(category=category).all() 
     total = len(questions)
+
+    def get_random_question():
+        return questions[random.randrange(0, len(questions), 1)]
+
+    def check_if_used(question):
+        used = False
+        for q in previous:
+            if (q == question.id):
+                used = True 
+
+        return used
+
+    question = get_random_question()
+
+    while (check_if_used(question)):
+        question = get_random_question()
+
+        if (len(previous) == total):
+            return jsonify({
+                'success': True
+            })
 
     return jsonify({
         'success': True,
