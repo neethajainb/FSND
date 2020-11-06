@@ -161,9 +161,12 @@ def create_app(test_config=None):
 
     search_results = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
 
+    # paginate the selection
+    paginated = paginate_questions(request, search_results)
+
     return jsonify({
       'success': True,
-      'questions': [question.format() for question in search_results],
+      'questions': paginated,
       'total_questions': len(search_results),
       'current_category': None
     }) 
@@ -175,6 +178,7 @@ def create_app(test_config=None):
   '''
   @app.route('/categories')
   def get_categories():
+    print("here asdkjaslkdjaslkd")
     categories = Category.query.order_by(Category.type).all()
 
     if len(categories) == 0:
@@ -195,16 +199,26 @@ def create_app(test_config=None):
   '''
   @app.route('/categories/<int:category_id>/questions')
   def get_questions_by_category(category_id):
+    category = Category.query.filter_by(id=category_id).one_or_none()
+    # abort 400 for bad request if category isn't found
+    if (category is None):
+      abort(400)
+
     try:
+      # get the category by id
       questions = Question.query.filter(Question.category == str(category_id)).all()
+
+      # paginate the selection
+      paginated = paginate_questions(request, questions)
 
       return jsonify({
         'success': True,
-        'questions': [question.format() for question in questions],
+        'questions': paginated,
         'total_questions': len(questions),
         'current_category': category_id
       })
-    except:
+    except Exception as e:
+        print(e)
         abort(404)
 
 
@@ -218,21 +232,26 @@ def create_app(test_config=None):
   TEST: In the "Play" tab, after a user selects "All" or a category,
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not. 
+  /quizzes?
   '''
-  @app.route('/quizzes', methods=['POST'])
+  @app.route('/play', methods=['POST'])
   def play_quiz():
     body = request.get_json()
-    previous = body.get('previous_questions')
+    previous = body.get('previous_question')
     category = body.get('quiz_category')
 
     if ((category is None) or (previous is None)):
-      abort(400)  
+      abort(404)  
     
-    if (category['id'] == 0):
-       questions = Question.query.all()
-    else:
-      questions = Question.query.filter_by(category=category['id']).all() 
-      total = len(questions)
+    questions = Question.query.filter_by(category=category).all() 
+    total = len(questions)
+
+    return jsonify({
+        'success': True,
+        'questions': [question.format() for question in questions],
+        'total_questions': len(questions),
+        'quiz_category': category
+      })
 
   '''
   @TODO: 
