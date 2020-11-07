@@ -2,9 +2,9 @@ import os
 import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
-
 from flaskr import create_app
 from models import setup_db, Question, Category
+from sqlalchemy import func
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -86,12 +86,19 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["message"], "resource not found")
 
     def test_delete_question(self):
+        question = Question(question='new question', answer='new answer',
+                            difficulty=1, category=1)
+        question.insert()
+        question_id = question.id
 
-        res = self.client().delete(f'/questions/11')
+        res = self.client().delete(f'/questions/{question_id}')
         data = json.loads(res.data)
 
-        #self.assertEqual(res.status_code, 200)
-        #self.assertEqual(data['success'], True)
+        question = Question.query.filter(
+            Question.id == question.id).one_or_none()
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
 
     def test_404_if_question_does_not_exist(self):
         res = self.client().delete('/questions/a')
@@ -145,6 +152,29 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data["success"], False)
         self.assertEqual(data["message"], "resource not found")
+
+    def test_failed_play_quiz(self):
+        res = self.client().post('/play', json={})
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(data['success'], False)
+        self.assertEqual(data['message'], 'bad request')
+    
+        res = self.client().post('/play', json={'searchTerm': 'previous_questions, quiz_category'})
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(data['success'], False)
+        self.assertEqual(data['message'], 'bad request')
+
+    def test_play_quiz(self):
+        res = self.client().post('play', json={'previous_questions': [1,2],'quiz_category': 1})
+        data = json.loads(res.data)
+        
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['success'])
+        self.assertTrue(data['question'])
 
 
 # Make the tests conveniently executable

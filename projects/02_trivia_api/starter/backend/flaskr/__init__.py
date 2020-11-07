@@ -3,6 +3,7 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
+from sqlalchemy import func
 
 from models import setup_db, Question, Category
 
@@ -242,42 +243,37 @@ def create_app(test_config=None):
   @app.route('/play', methods=['POST'])
   def play_quiz():
     body = request.get_json()
-    previous = body.get('previous_question')
-    category = body.get('quiz_category')
+    if not body:
+        abort(400)
 
-    if ((category is None) or (previous is None)):
-      abort(404)  
-    
-    questions = Question.query.filter_by(category=category).all() 
-    total = len(questions)
+    if (body.get('previous_questions') is None or body.get('quiz_category') is None):
+        abort(400)
 
-    def get_random_question():
-        return questions[random.randrange(0, len(questions), 1)]
+    previous_questions = body.get('previous_questions')
+    if type(previous_questions) != list:
+        abort(400)
 
-    def check_if_used(question):
-        used = False
-        for q in previous:
-            if (q == question.id):
-                used = True 
 
-        return used
-
-    question = get_random_question()
-
-    while (check_if_used(question)):
-        question = get_random_question()
-
-        if (len(previous) == total):
-            return jsonify({
-                'success': True
-            })
-
+    category_id = body.get('quiz_category')
+    if category_id == 0:
+        selection = Question.query.order_by(func.random())
+    else:
+        selection = Question.query.filter(
+            Question.category == category_id).order_by(func.random())
+    if not selection.all():
+        abort(404)
+    else:
+        question = selection.filter(Question.id.notin_(
+            previous_questions)).first()
+    if question is None:
+        return jsonify({
+            'success': True
+        })
     return jsonify({
         'success': True,
-        'questions': [question.format() for question in questions],
-        'total_questions': len(questions),
-        'quiz_category': category
-      })
+        'question': question.format()
+    })
+
 
   '''
   @TODO: 
