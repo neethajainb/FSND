@@ -253,8 +253,10 @@ def create_app(test_config=None):
     if type(previous_questions) != list:
         abort(400)
 
+       
+    category = body.get('quiz_category')
+    category_id = int(category['id'])
 
-    category_id = body.get('quiz_category')
     if category_id == 0:
         selection = Question.query.order_by(func.random())
     else:

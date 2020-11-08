@@ -86,19 +86,31 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["message"], "resource not found")
 
     def test_delete_question(self):
-        question = Question(question='new question', answer='new answer',
+        # Insert a question into DATABASE
+        question = Question(question='test_delete_question', answer='new answer',
                             difficulty=1, category=1)
         question.insert()
-        question_id = question.id
+        # get the id of the new question
+        q_id = question.id
 
-        res = self.client().delete(f'/questions/{question_id}')
-        data = json.loads(res.data)
+        # get number of questions before delete
+        questions_before = Question.query.all()
 
-        question = Question.query.filter(
-            Question.id == question.id).one_or_none()
+        # delete the question and store response
+        response = self.client().delete('/questions/{}'.format(q_id))
+        data = json.loads(response.data)
 
-        self.assertEqual(res.status_code, 200)
-        self.assertEqual(data['success'], True)
+        # get number of questions after delete
+        questions_after = Question.query.all()
+
+        # see if the question has been deleted
+        question = Question.query.filter(Question.id == 1).one_or_none()
+
+        # check status code and success message
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data['success'], True)        
+
+
 
     def test_404_if_question_does_not_exist(self):
         res = self.client().delete('/questions/a')
@@ -169,7 +181,15 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], 'bad request')
 
     def test_play_quiz(self):
-        res = self.client().post('play', json={'previous_questions': [1,2],'quiz_category': 1})
+        new_quiz = {
+            "quiz_category": {
+                "type": "Art",
+                "id": "2"
+            },
+            "previous_questions": [14, 13, 15]
+        }
+
+        res = self.client().post('play', json=new_quiz)
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)

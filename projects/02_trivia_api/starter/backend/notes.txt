@@ -58,3 +58,18 @@ flask run
         })
         except:
               abort(422)
+
+
+
+# Steps to run unit test cases
+source project/environments/trivia/bin/activate
+
+dropdb trivia_test
+createdb trivia_test
+
+cd project/FSND/projects/02_trivia_api/starter/backend/
+psql trivia_test < trivia.psql
+python test_flaskr.py
+
+
+
