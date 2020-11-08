@@ -39,26 +39,6 @@ flask run
 
 
 
-        
-
-        
-        question = get_random_question()
-
-             while (check_if_used(question)):
-            question = get_random_question()
-
-            if (len(previous) == total):
-                return jsonify({
-                    'success': True
-                })
-
-        return jsonify({
-            'success': True,
-            'question': question.format()
-        })
-        except:
-              abort(422)
-
 
 
 # Steps to run unit test cases, do not start server
