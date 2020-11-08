@@ -82,3 +82,13 @@ python test_flaskr.py
 cd project/FSND/projects/02_trivia_api/starter/frontend/
 npm start
 
+
+# to commit git
+
+
+cd project/FSND/projects/02_trivia_api/
+ git status
+ git diff
+ git commit -am "Add run unit cases"
+ git push
+ history
