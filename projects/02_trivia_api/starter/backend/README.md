@@ -67,14 +67,14 @@ One note before you delve into your tasks: for each endpoint you are expected to
 9. Create error handlers for all expected errors including 400, 404, 422 and 500. 
 
 
-# API Reference
+## API Reference
 
-##  General
+###  General
  1. Base URL: this app is hosted locally under the port 5000. The API base URL is http://127.0.0.1:5000/
  2. Authentication: this app doesn't require any authentication or API tokens.
  3. You must set the header: Content-Type: application/json with every request.
 
-##  Error Handlers
+###  Error Handlers
 
 if any errors accured, the API will return a json object in the following format:
 ```
@@ -92,9 +92,9 @@ The following errors will be reported:
 422: unprocessible
 
 
-# Endpoints
+## Endpoints
 
-##  GET /categories
+###  GET /categories
 . General: -
  1. Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
  2. Request Arguments: None
@@ -114,11 +114,12 @@ The following errors will be reported:
 }
 ```
 
-##  GET /questions
-. General:
+###  GET /questions
+. General:-
   1.Returns a list questions.
   2.Results are paginated in groups of 10.
   3.Also returns list of categories and total number of questions.
+
 .Example : curl http://127.0.0.1:5000/questions
 ```
 {
@@ -208,10 +209,11 @@ The following errors will be reported:
 }
 
 ```
-##  DELETE /questions/<int:id>
-. General:
+###  DELETE /questions/<int:id>
+. General:-
     1. Deletes a question by id using url parameters.
     2. Returns id of deleted question upon success.
+
 .Example : curl http://127.0.0.1:5000/questions/6 -X DELETE
 ```
 Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questions/6 -X DELETE
@@ -294,11 +296,12 @@ Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questio
 }
 
 ```
-##  POST /questions
+###  POST /questions
   This endpoint either creates a new question or returns search results.
-  .General:
+  .General:-
    1. Creates a new question using JSON request parameters.
    2. Returns JSON object with newly created question, as well as paginated questions.
+
   .Example : curl http://127.0.0.1:5000/questions -X POST -H "Content-Type: application/json" -d '{ "question": "Which US state contains an area known as the Upper Penninsula?", "answer": "Michigan", "difficulty": 3, "category": "3" }'
  ```
  {
@@ -381,12 +384,14 @@ Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questio
 }
  ```
 
-##  Post /questions/search
-   If search term is included in request:
-   .General:
+###  Post /questions/search
+   
+   If search term is included in request:-
+   --General:-
    1. Searches for questions using search term in JSON request parameters.
    2. Returns JSON object with paginated matching questions.
-  .Example : curl -X POST  -H "Content-Type: application/json" -d '{"searchTerm":"India"}' http://127.0.0.1:5000/questions/search
+  
+  --Example : curl -X POST  -H "Content-Type: application/json" -d '{"searchTerm":"India"}' http://127.0.0.1:5000/questions/search
 ```
 {
   "current_category": null, 
@@ -411,11 +416,12 @@ Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questio
 }
 ```
 
-##  GET /categories/<int:id>/questions
-  .General:
+###  GET /categories/<int:id>/questions
+  -- General:-
   1. Gets questions by category id using url parameters.
   2. Returns JSON object with paginated matching questions.
-  .Example :  curl http://127.0.0.1:5000/categories/1/questions
+
+  -- Example :  curl http://127.0.0.1:5000/categories/1/questions
 ```
 {
   "current_category": 1, 
@@ -454,12 +460,13 @@ Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questio
 }
 ```
 
-##  POST /quizzes
- .General:
+###  POST /quizzes
+ -- General:-
    1.Allows users to play the quiz game.
    2.Uses JSON request parameters of category and previous questions.
    3.Returns JSON object with random question not among previous questions.
- .Example : curl -X POST http://127.0.0.1:5000/play -H "Content-Type: application/json" -d '{"previous_questions": [], "quiz_category": {"id": 0}}'
+
+ -- Example : curl -X POST http://127.0.0.1:5000/play -H "Content-Type: application/json" -d '{"previous_questions": [], "quiz_category": {"id": 0}}'
 
 ```
 {
