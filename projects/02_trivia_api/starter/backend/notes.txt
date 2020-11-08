@@ -61,7 +61,7 @@ flask run
 
 
 
-# Steps to run unit test cases
+# Steps to run unit test cases, do not start server
 source project/environments/trivia/bin/activate
 
 dropdb trivia_test
@@ -72,4 +72,13 @@ psql trivia_test < trivia.psql
 python test_flaskr.py
 
 
+
+
+# Front end
+# First start the backend server in a new terminal
+./start_trivia_server.sh
+
+# start a new terminal and run 
+cd project/FSND/projects/02_trivia_api/starter/frontend/
+npm start
 
