@@ -162,7 +162,6 @@ def create_app(test_config=None):
         abort(422)
      
   '''
-  @TODO: 
   Create a POST endpoint to get questions based on a search term. 
   It should return any questions for whom the search term 
   is a substring of the question. 
@@ -246,7 +245,6 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: 
   Create a POST endpoint to get questions to play the quiz. 
   This endpoint should take category and previous question parameters 
   and return a random questions within the given category, 
@@ -304,7 +302,6 @@ def create_app(test_config=None):
 
 
   '''
-  @TODO: 
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''

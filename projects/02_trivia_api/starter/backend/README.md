@@ -95,10 +95,9 @@ The following errors will be reported:
 ## Endpoints
 
 ###  GET /categories
-. General: -
  1. Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
  2. Request Arguments: None
- 3 .Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs.
+ 3. Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs.
 . Example : curl http://127.0.0.1:5000/categories
 ```
 {
@@ -115,12 +114,10 @@ The following errors will be reported:
 ```
 
 ###  GET /questions
-. General:-
-  1.Returns a list questions.
-  2.Results are paginated in groups of 10.
-  3.Also returns list of categories and total number of questions.
+  1. Returns a list questions.
+  2. Also returns list of categories and total number of questions.
 
-.Example : curl http://127.0.0.1:5000/questions
+. Example : curl http://127.0.0.1:5000/questions
 ```
 {
   "categories": {
@@ -210,13 +207,12 @@ The following errors will be reported:
 
 ```
 ###  DELETE /questions/<int:id>
-. General:-
+
     1. Deletes a question by id using url parameters.
     2. Returns id of deleted question upon success.
 
 .Example : curl http://127.0.0.1:5000/questions/6 -X DELETE
 ```
-Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questions/6 -X DELETE
 {
   "deleted": 6, 
   "questions": [
@@ -298,7 +294,6 @@ Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questio
 ```
 ###  POST /questions
   This endpoint either creates a new question or returns search results.
-  .General:-
    1. Creates a new question using JSON request parameters.
    2. Returns JSON object with newly created question, as well as paginated questions.
 
@@ -387,7 +382,6 @@ Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questio
 ###  Post /questions/search
    
    If search term is included in request:-
-   --General:-
    1. Searches for questions using search term in JSON request parameters.
    2. Returns JSON object with paginated matching questions.
   
@@ -417,9 +411,9 @@ Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questio
 ```
 
 ###  GET /categories/<int:id>/questions
-  -- General:-
-  1. Gets questions by category id using url parameters.
-  2. Returns JSON object with paginated matching questions.
+ 
+   Gets questions by category id using url parameters.
+  
 
   -- Example :  curl http://127.0.0.1:5000/categories/1/questions
 ```
@@ -461,7 +455,7 @@ Neethas-MacBook-Air:02_trivia_api neethajain$ curl http://127.0.0.1:5000/questio
 ```
 
 ###  POST /quizzes
- -- General:-
+
    1.Allows users to play the quiz game.
    2.Uses JSON request parameters of category and previous questions.
    3.Returns JSON object with random question not among previous questions.
