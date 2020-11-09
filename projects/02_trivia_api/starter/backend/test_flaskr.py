@@ -89,23 +89,23 @@ class TriviaTestCase(unittest.TestCase):
         question = Question(question='test_delete_question', answer='new answer',
                             difficulty=1, category=1)
         question.insert()
-        q_id = question.id
+        question_id = question.id
 
         questions_before = Question.query.all()
 
-        response = self.client().delete('/questions/{}'.format(q_id))
-        data = json.loads(response.data)
+        res = self.client().delete('/questions/{}'.format(question_id))
+        data = json.loads(res.data)
 
         questions_after = Question.query.all()
         question = Question.query.filter(Question.id == 1).one_or_none()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)        
 
 
 
     def test_404_if_question_does_not_exist(self):
-        res = self.client().delete('/questions/a')
+        res = self.client().delete('/questions/ab')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
