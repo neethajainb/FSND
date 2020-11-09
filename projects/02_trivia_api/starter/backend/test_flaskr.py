@@ -136,9 +136,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["success"], True)
         self.assertEqual(total_questions_after, total_questions_before + 1)
 
-    def test_422_missing_difficulty_create_question(self):
+    def test_422_missing_difficultyfield_create_question(self):
         new_question = {
-            'answer': 'new_answer',
+            'answer': 'here is a answer',
             'category': 1
         }
         res = self.client().post('/questions', json=new_question)
@@ -149,7 +149,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["message"], "unprocessable")
     
     def test_search_questions(self):
-        res = self.client().post('/questions/search', json={'searchTerm': 'organ'})
+        res = self.client().post('/questions/search', json={'searchTerm': 'And'})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
@@ -165,7 +165,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["success"], False)
         self.assertEqual(data["message"], "resource not found")
 
-    def test_failed_play_quiz(self):
+    def test_400_missing_body_failed_play_quiz(self):
         res = self.client().post('/play', json={})
         data = json.loads(res.data)
         
@@ -173,6 +173,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertFalse(data['success'], False)
         self.assertEqual(data['message'], 'bad request')
     
+    def test_400_bad_fields_failed_play_quiz(self):
         res = self.client().post('/play', json={'searchTerm': 'previous_questions, quiz_category'})
         data = json.loads(res.data)
         
@@ -180,7 +181,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertFalse(data['success'], False)
         self.assertEqual(data['message'], 'bad request')
 
-    def test_play_quiz(self):
+    def test_200_OK_play_quiz(self):
         new_quiz = {
             "quiz_category": {
                 "type": "Art",
