@@ -259,48 +259,47 @@ def create_app(test_config=None):
   '''
   @app.route('/play', methods=['POST'])
   def play_quiz():
-    # load the request body
     body = request.get_json()
+    # the request did not have a body and hence return BAD_REQUEST
     if not body:
-      # an envalid json should return a 400 error.
-        abort(400)
-    
-    # if previous_questions or quiz_category are missing, return a 400 error
-    if (body.get('previous_questions') is None or body.get('quiz_category') is None):
-        abort(400)
+      abort(400)
 
-    # previous_questions should be a list, otherwise return a 400 error
+    #Now check the individiual fields to see if they are present in the request
+    #if not return 400
+    if body.get('previous_questions') is None:
+      abort(400)
+    
+    if body.get('quiz_category') is None:
+      abort(400)
+
     previous_questions = body.get('previous_questions')
-    if type(previous_questions) != list:
-        abort(400)
+    #Read the category for quizing  
+    quiz_category = body.get('quiz_category')
 
-       
-    category = body.get('quiz_category')
     # convert category id to integer
-    category_id = int(category['id'])
-    
-    # insure that there are questions to be played. 
-    if category_id == 0:
-        selection = Question.query.order_by(func.random())
+    cat_id = int(quiz_category['id'])
+    if cat_id == 0:
+      questions_by_category = Question.query.order_by(func.random())
     else:
-        selection = Question.query.filter(
-            Question.category == category_id).order_by(func.random())
-    if not selection.all():
+        #Use the category that was sent by user
+        questions_by_category = Question.query.filter(Question.category == cat_id).order_by(func.random())
+    
+    #Check to see if there is any questions for the selected category
+    if not questions_by_category.all():
         abort(404)
     else:
-        question = selection.filter(Question.id.notin_(
-            previous_questions)).first()
+      #Filter out all the questions that were previously played out
+      quiz_on_question = questions_by_category.filter(Question.id.notin_(previous_questions)).first()
     
-    if question is None:
-        # all questions were played, returning a success message without a question signifies the end of the game   
+    # User already played all the question in this category and hence return done
+    if quiz_on_question is None:
         return jsonify({
             'success': True
         })
-    
-    # Found a question that wasn't played before, let's return it to the user
+    # There is atleast one question that is yet to be played and return first such question
     return jsonify({
         'success': True,
-        'question': question.format()
+        'question': quiz_on_question.format()
     })
 
 
