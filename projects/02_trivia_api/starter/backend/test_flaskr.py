@@ -86,27 +86,19 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data["message"], "resource not found")
 
     def test_delete_question(self):
-        # Insert a question into DATABASE
         question = Question(question='test_delete_question', answer='new answer',
                             difficulty=1, category=1)
         question.insert()
-        # get the id of the new question
         q_id = question.id
 
-        # get number of questions before delete
         questions_before = Question.query.all()
 
-        # delete the question and store response
         response = self.client().delete('/questions/{}'.format(q_id))
         data = json.loads(response.data)
 
-        # get number of questions after delete
         questions_after = Question.query.all()
-
-        # see if the question has been deleted
         question = Question.query.filter(Question.id == 1).one_or_none()
 
-        # check status code and success message
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)        
 
